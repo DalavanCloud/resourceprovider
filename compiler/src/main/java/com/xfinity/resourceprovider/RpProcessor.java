@@ -56,7 +56,8 @@ public class RpProcessor extends AbstractProcessor {
             }
 
             try {
-                List<String> rClassVars = new ArrayList<>();
+                List<String> rStringVars = new ArrayList<>();
+                List<String> rPluralVars = new ArrayList<>();
                 //lame.  this assumes that the application class is at the top level.  find a better way.
                 String packageName = getPackageName(processingEnv.getElementUtils(), annotatedClass);
                 String rClassName = packageName + ".R";
@@ -67,17 +68,23 @@ public class RpProcessor extends AbstractProcessor {
                         element.getEnclosedElements().stream()
                                .filter(enclosedElement -> enclosedElement instanceof TypeElement)
                                .forEach(enclosedElement -> {
+                                   List<? extends Element> enclosedElements = enclosedElement.getEnclosedElements();
                                    if (enclosedElement.getSimpleName().toString().equals("string")) {
-                                       List<? extends Element> enclosedStringElements = enclosedElement.getEnclosedElements();
-                                       enclosedStringElements.stream()
-                                                             .filter(stringElement -> stringElement instanceof Symbol.VarSymbol)
-                                                             .forEach(stringElement -> rClassVars.add(stringElement.toString()));
+                                       enclosedElements.stream()
+                                                       .filter(stringElement -> stringElement instanceof Symbol.VarSymbol)
+                                                       .forEach(stringElement -> rStringVars.add(stringElement.toString()));
+                                   }
+
+                                   if (enclosedElement.getSimpleName().toString().equals("plurals")) {
+                                       enclosedElements.stream()
+                                                       .filter(pluralsElement -> pluralsElement instanceof Symbol.VarSymbol)
+                                                       .forEach(pluralsElement -> rPluralVars.add(pluralsElement.toString()));
                                    }
                                });
                     }
                 });
 
-                generateCode(annotatedClass, rClassVars);
+                generateCode(annotatedClass, rStringVars, rPluralVars);
             } catch (UnnamedPackageException | IOException e) {
                 messager.error(annotatedElement, "Couldn't generate class for %s: %s", annotatedClass,
                                e.getMessage());
@@ -92,10 +99,10 @@ public class RpProcessor extends AbstractProcessor {
         return processingEnv.getTypeUtils().isAssignable(annotatedClass.asType(), applicationTypeElement.asType());
     }
 
-    private void generateCode(TypeElement annotatedClass, List<String> rClassVars)
+    private void generateCode(TypeElement annotatedClass, List<String> rStringVars, List<String> rPluralVars)
             throws UnnamedPackageException, IOException {
         String packageName = getPackageName(processingEnv.getElementUtils(), annotatedClass);
-        RpCodeGenerator codeGenerator = new RpCodeGenerator(rClassVars);
+        RpCodeGenerator codeGenerator = new RpCodeGenerator(rStringVars, rPluralVars);
         TypeSpec generatedClass = codeGenerator.generateClass();
 
         JavaFile javaFile = builder(packageName, generatedClass).build();
