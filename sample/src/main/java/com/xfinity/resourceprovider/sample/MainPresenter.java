@@ -27,6 +27,8 @@ class MainPresenter {
             mainView.setDateString(resourceProvider.getFirstHalfOfMonth());
         }
 
+        mainView.setDateColor(resourceProvider.getBabyBlue());
+
         int dayOfWeek = today.get(Calendar.DAY_OF_WEEK);
         int daysUntilFriday = Calendar.FRIDAY - dayOfWeek;
         if (daysUntilFriday >= 0) {

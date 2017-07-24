@@ -15,17 +15,17 @@ import java.util.List;
 import static com.squareup.javapoet.ClassName.get;
 import static com.squareup.javapoet.TypeName.INT;
 import static com.squareup.javapoet.TypeSpec.classBuilder;
-import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
-
 
 final class RpCodeGenerator {
     private List<String> rClassStringVars;
     private List<String> rClassPluralVars;
+    private List<String> rClassColorVars;
 
-    RpCodeGenerator(List<String> rClassStringVars, List<String> rClassPluralVars) {
+    RpCodeGenerator(List<String> rClassStringVars, List<String> rClassPluralVars, List<String> rClassColorVars) {
         this.rClassStringVars = rClassStringVars;
         this.rClassPluralVars = rClassPluralVars;
+        this.rClassColorVars = rClassColorVars;
     }
 
     TypeSpec generateClass() {
@@ -82,6 +82,18 @@ final class RpCodeGenerator {
                                                  .build());
             } catch (IllegalArgumentException e) {
                 System.out.println("\n\nResourceProvider Compiler Error: " + e.getMessage() + ".\n\nUnable to generate API for R.plurals." + var + "\n\n") ;
+            }
+        }
+
+        for (String var : rClassColorVars) {
+            try {
+                classBuilder.addMethod(MethodSpec.methodBuilder("get" + getterSuffix(var))
+                                                 .addModifiers(Modifier.PUBLIC)
+                                                 .returns(INT)
+                                                 .addStatement("return R.color." + var)
+                                                 .build());
+            } catch (IllegalArgumentException e) {
+                System.out.println("\n\nResourceProvider Compiler Error: " + e.getMessage() + ".\n\nUnable to generate API for R.color." + var + "\n\n") ;
             }
 
         }

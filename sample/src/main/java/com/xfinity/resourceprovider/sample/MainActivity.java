@@ -34,6 +34,11 @@ public class MainActivity extends ActionBarActivity implements MainView {
   }
 
   @Override
+  public void setDateColor(int color) {
+    dateTextView.setTextColor(getResources().getColor(color));
+  }
+
+  @Override
   public void setPluralsString(String pluralsString) {
     pluralsView.setText(pluralsString);
   }
